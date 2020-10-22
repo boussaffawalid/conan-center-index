@@ -1,0 +1,4 @@
+sources:
+  "0.11.1":
+    url: "https://github.com/frankosterfeld/qtkeychain/archive/v0.11.1.zip"
+    sha256: "834f24696bed0345fb72727b5a6d7d3144363158f022f1ee142b142299ac95c5"
