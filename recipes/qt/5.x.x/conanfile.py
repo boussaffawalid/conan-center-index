@@ -978,6 +978,12 @@ Examples = bin/datadir/examples""")
         if self.options.qtdeclarative:
             _create_private_module("Qml", ["CorePrivate", "Qml"])
 
+            if self.options.gui:
+                _create_private_module("Quick", ["CorePrivate", "GuiPrivate", "QmlPrivate", "Quick"])
+
+        if self.options.qtscxml:
+            _create_private_module("Scxml", ["Scxml", "Qml"])
+
     def package_info(self):
         self.cpp_info.set_property("cmake_file_name", "Qt5")
         self.cpp_info.set_property("pkg_config_name", "qt5")
@@ -1249,6 +1255,7 @@ Examples = bin/datadir/examples""")
             self.cpp_info.components["qtQmlImportScanner"].requires = _get_corrected_reqs(["Qml"])
             if self.options.gui:
                 _create_module("Quick", ["Gui", "Qml", "QmlModels"])
+                _add_build_module("qtQuick", self._cmake_qt5_private_file("Quick"))
                 if self.options.widgets:
                     _create_module("QuickWidgets", ["Gui", "Qml", "Quick", "Widgets"])
                 _create_module("QuickShapes", ["Gui", "Qml", "Quick"])
@@ -1337,6 +1344,7 @@ Examples = bin/datadir/examples""")
 
         if self.options.qtscxml:
             _create_module("Scxml", ["Qml"])
+            _add_build_module("qtScxml", self._cmake_qt5_private_file("Scxml"))
 
         if self.options.qtpurchasing:
             _create_module("Purchasing")
