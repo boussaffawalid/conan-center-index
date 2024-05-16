@@ -55,7 +55,7 @@ class QtConan(ConanFile):
         "with_libjpeg": ["libjpeg", "libjpeg-turbo", False],
         "with_libpng": [True, False],
         "with_sqlite3": [True, False],
-        "with_mysql": [True, False],
+        "with_mysql": ["mysql", "mariadb", False],
         "with_pq": [True, False],
         "with_odbc": [True, False],
         "with_libalsa": [True, False],
@@ -99,7 +99,7 @@ class QtConan(ConanFile):
         "with_libjpeg": "libjpeg",
         "with_libpng": True,
         "with_sqlite3": True,
-        "with_mysql": True,
+        "with_mysql": "mysql",
         "with_pq": True,
         "with_odbc": True,
         "with_libalsa": False,
@@ -192,7 +192,6 @@ class QtConan(ConanFile):
         if self.settings.compiler in ["gcc", "clang"] and Version(self.settings.compiler.version) < "5.3":
             del self.options.with_mysql
         if self.settings.os == "Windows":
-            self.options.with_mysql = False
             self.options.opengl = "dynamic"
             del self.options.with_gssapi
         if self.settings.os != "Linux":
@@ -384,8 +383,10 @@ class QtConan(ConanFile):
             self.requires("libpng/1.6.42")
         if self.options.with_sqlite3 and not self.options.multiconfiguration:
             self.requires("sqlite3/3.45.0")
-        if self.options.get_safe("with_mysql", False):
+        if self.options.get_safe("with_mysql", False) == "mysql":
             self.requires("libmysqlclient/8.1.0")
+        if self.options.get_safe("with_mysql", False) == "mariadb":
+            self.requires("mariadb-connector-c/3.3.3")
         if self.options.with_pq:
             self.requires("libpq/15.4")
         if self.options.with_odbc:
@@ -727,6 +728,7 @@ class QtConan(ConanFile):
                   ("libjpeg-turbo", "LIBJPEG"),
                   ("libpng", "LIBPNG"),
                   ("sqlite3", "SQLITE"),
+                  ("mariadb-connector-c", "MYSQL"),
                   ("libmysqlclient", "MYSQL"),
                   ("libpq", "PSQL"),
                   ("odbc", "ODBC"),
@@ -754,6 +756,8 @@ class QtConan(ConanFile):
 
         if "libmysqlclient" in [d.ref.name for d in self.dependencies.direct_host.values()]:
             args.append("-mysql_config \"%s\"" % os.path.join(self.dependencies["libmysqlclient"].package_folder, "bin", "mysql_config"))
+        if "mariadb-connector-c" in [d.ref.name for d in self.dependencies.direct_host.values()]:
+            args.append("-mysql_config \"%s\"" % os.path.join(self.dependencies["mariadb-connector-c"].package_folder, "bin", "mysql_config"))
         if "libpq" in [d.ref.name for d in self.dependencies.direct_host.values()]:
             args.append("-psql_config \"%s\"" % os.path.join(self.dependencies["libpq"].package_folder, "bin", "pg_config"))
         if self.settings.os == "Macos":
@@ -1225,8 +1229,10 @@ Examples = bin/datadir/examples""")
             _create_plugin("QSQLiteDriverPlugin", "qsqlite", "sqldrivers", ["sqlite3::sqlite3"])
         if self.options.with_pq:
             _create_plugin("QPSQLDriverPlugin", "qsqlpsql", "sqldrivers", ["libpq::libpq"])
-        if self.options.get_safe("with_mysql", False):
+        if self.options.get_safe("with_mysql", False) == "mysql":
             _create_plugin("QMySQLDriverPlugin", "qsqlmysql", "sqldrivers", ["libmysqlclient::libmysqlclient"])
+        if self.options.get_safe("with_mysql", False) == "mariadb":
+            _create_plugin("QMySQLDriverPlugin", "qsqlmysql", "sqldrivers", ["mariadb-connector-c::mariadb-connector-c"])
         if self.options.with_odbc:
             if self.settings.os != "Windows":
                 _create_plugin("QODBCDriverPlugin", "qsqlodbc", "sqldrivers", ["odbc::odbc"])
